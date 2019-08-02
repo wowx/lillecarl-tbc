@@ -67,6 +67,8 @@
 #include "World/WorldState.h"
 #include "Cinematics/CinematicMgr.h"
 
+#include "Custom/Custom.h"
+
 #include <algorithm>
 #include <mutex>
 #include <cstdarg>
@@ -802,6 +804,8 @@ void World::LoadConfigSettings(bool reload)
     setConfig(CONFIG_BOOL_PATH_FIND_OPTIMIZE, "PathFinder.OptimizePath", true);
     setConfig(CONFIG_BOOL_PATH_FIND_NORMALIZE_Z, "PathFinder.NormalizeZ", false);
 
+    sCustom.LoadConfig();
+
     sLog.outString();
 }
 
@@ -1333,8 +1337,12 @@ void World::SetInitialWorldSettings()
     sAuctionBot.Initialize();
     sLog.outString();
 
-    sLog.outString("Loading WorldState");
+    sLog.outString("Loading WorldState...");
     sWorldState.Load();
+    sLog.outString();
+
+    sLog.outString("Loading custom database related stuff...");
+    sCustom.Load();
     sLog.outString();
 
 #ifdef BUILD_PLAYERBOT
@@ -1399,6 +1407,8 @@ void World::DetectDBCLang()
 /// Update the World !
 void World::Update(uint32 diff)
 {
+    sCustom.Update(diff);
+
     m_currentMSTime = WorldTimer::getMSTime();
     m_currentTime = std::chrono::time_point_cast<std::chrono::milliseconds>(Clock::now());
     m_currentDiff = diff;

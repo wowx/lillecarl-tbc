@@ -48,6 +48,9 @@
 #include "Entities/CreatureLinkingMgr.h"
 #include "Tools/Formulas.h"
 
+#include "Custom/Custom.h"
+#include "Custom/SpellRegulator.hpp"
+
 #include <math.h>
 #include <array>
 
@@ -215,6 +218,7 @@ void MovementInfo::Read(ByteBuffer& data)
     data >> moveFlags;
     data >> moveFlags2;
     data >> time;
+    acTime = time;
     data >> pos.x;
     data >> pos.y;
     data >> pos.z;
@@ -305,6 +309,8 @@ Unit::Unit() :
     m_spellProcsHappening(false),
     m_auraUpdateMask(0)
 {
+    m_movementInfo = MovementInfoPtr(new MovementInfo());
+
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
     // 2.3.2 - 0x70
@@ -658,7 +664,7 @@ bool Unit::UpdateMeleeAttackingState()
 
 void Unit::SendHeartBeat()
 {
-    m_movementInfo.UpdateTime(WorldTimer::getMSTime());
+    m_movementInfo->UpdateTime(WorldTimer::getMSTime());
     WorldPacket data(MSG_MOVE_HEARTBEAT, 64);
     data << GetPackGUID();
     data << m_movementInfo;
@@ -798,6 +804,9 @@ uint32 Unit::DealDamage(Unit* pVictim, uint32 damage, CleanDamage const* cleanDa
 
         return 0;
     }
+
+    if (spellProto)
+        sCustom.spellRegulator->RegulateSpell(spellProto->Id, damage);
 
     DEBUG_FILTER_LOG(LOG_FILTER_DAMAGE, "DealDamageStart");
 
@@ -5769,6 +5778,8 @@ void Unit::RemoveAllGameObjects()
 
 void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage* log) const
 {
+    sCustom.spellRegulator->RegulateSpell(log->SpellID, log->damage);
+
     WorldPacket data(SMSG_SPELLNONMELEEDAMAGELOG, (8 + 8 + 4 + 4 + 1 + 4 + 4 + 1 + 1 + 4 + 4 + 1));
     data << log->target->GetPackGUID();
     data << log->attacker->GetPackGUID();
@@ -5837,6 +5848,8 @@ void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* pInfo) const
 {
     Aura* aura = pInfo->aura;
     Modifier* mod = aura->GetModifier();
+
+    sCustom.spellRegulator->RegulateSpell(aura->GetId(), pInfo->damage);
 
     WorldPacket data(SMSG_PERIODICAURALOG, 30);
     data << aura->GetTarget()->GetPackGUID();
@@ -6820,6 +6833,9 @@ void Unit::UnsummonAllTotems() const
 
 int32 Unit::DealHeal(Unit* pVictim, uint32 addhealth, SpellEntry const* spellProto, bool critical)
 {
+    if (spellProto)
+        sCustom.spellRegulator->RegulateSpell(spellProto->Id, addhealth);
+
     int32 gain = pVictim->ModifyHealth(int32(addhealth));
 
     Unit* unit = this;
@@ -10184,7 +10200,7 @@ void Unit::SetImmobilizedState(bool apply, bool stun)
         else
         {
             // Clear unit movement flags
-            m_movementInfo.SetMovementFlags(MOVEFLAG_NONE);
+            m_movementInfo->SetMovementFlags(MOVEFLAG_NONE);
             SetRoot(true);
         }
     }
@@ -10192,7 +10208,7 @@ void Unit::SetImmobilizedState(bool apply, bool stun)
     {
         clearUnitState(state);
         // Prevent giving ability to move if more immobilizers are active
-        if (!hasUnitState(immobilized) && (player || m_movementInfo.HasMovementFlag(MOVEFLAG_ROOT)))
+        if (!hasUnitState(immobilized) && (player || m_movementInfo->HasMovementFlag(MOVEFLAG_ROOT)))
             SetRoot(false);
     }
 }
@@ -11249,7 +11265,7 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
 
 void Unit::DisableSpline()
 {
-    m_movementInfo.RemoveMovementFlag(MovementFlags(MOVEFLAG_SPLINE_ENABLED | MOVEFLAG_FORWARD));
+    m_movementInfo->RemoveMovementFlag(MovementFlags(MOVEFLAG_SPLINE_ENABLED | MOVEFLAG_FORWARD));
     movespline->_Interrupt();
 }
 

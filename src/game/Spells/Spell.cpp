@@ -1771,7 +1771,7 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, bool targ
             bool isPrevInLiquid = false;
 
             // falling case
-            if (!m_caster->GetMap()->GetHeightInRange(prevPos.x, prevPos.y, groundZ, 3.0f) && m_caster->m_movementInfo.HasMovementFlag(MOVEFLAG_FALLING))
+            if (!m_caster->GetMap()->GetHeightInRange(prevPos.x, prevPos.y, groundZ, 3.0f) && m_caster->m_movementInfo->HasMovementFlag(MOVEFLAG_FALLING))
             {
                 nextPos.x = prevPos.x + dist * cos(orientation);
                 nextPos.y = prevPos.y + dist * sin(orientation);
@@ -3479,7 +3479,7 @@ void Spell::update(uint32 difftime)
     // check if the player or unit caster has moved before the spell finished (exclude casting on vehicles)
     if (((m_caster->GetTypeId() == TYPEID_PLAYER || m_caster->GetTypeId() == TYPEID_UNIT) && m_timer != 0) &&
             (m_castPositionX != m_caster->GetPositionX() || m_castPositionY != m_caster->GetPositionY() || m_castPositionZ != m_caster->GetPositionZ()) &&
-            (m_spellInfo->Effect[EFFECT_INDEX_0] != SPELL_EFFECT_STUCK || !m_caster->m_movementInfo.HasMovementFlag(MOVEFLAG_FALLINGFAR)))
+            (m_spellInfo->Effect[EFFECT_INDEX_0] != SPELL_EFFECT_STUCK || !m_caster->m_movementInfo->HasMovementFlag(MOVEFLAG_FALLINGFAR)))
     {
         // always cancel for channeled spells
         if (m_spellState == SPELL_STATE_CHANNELING)
@@ -3514,7 +3514,7 @@ void Spell::update(uint32 difftime)
                 if (m_caster->GetTypeId() == TYPEID_PLAYER || m_caster->GetTypeId() == TYPEID_UNIT)
                 {
                     // check if player has jumped before the channeling finished
-                    if (m_caster->m_movementInfo.HasMovementFlag(MOVEFLAG_FALLING))
+                    if (m_caster->m_movementInfo->HasMovementFlag(MOVEFLAG_FALLING))
                         cancel();
 
                     // check for incapacitating player states
@@ -4555,7 +4555,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         if (((Player*)m_caster)->IsMoving())
         {
             // skip stuck spell to allow use it in falling case and apply spell limitations at movement
-            if ((!((Player*)m_caster)->m_movementInfo.HasMovementFlag(MOVEFLAG_FALLINGFAR) || m_spellInfo->Effect[EFFECT_INDEX_0] != SPELL_EFFECT_STUCK) &&
+            if ((!((Player*)m_caster)->m_movementInfo->HasMovementFlag(MOVEFLAG_FALLINGFAR) || m_spellInfo->Effect[EFFECT_INDEX_0] != SPELL_EFFECT_STUCK) &&
                     (IsAutoRepeat() || (m_spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED) != 0))
                 return SPELL_FAILED_MOVING;
         }
@@ -5136,7 +5136,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     target->GetFirstCollisionPosition(pos, target->GetCombatReach(), target->GetAngle(m_caster));
 
                     // TODO: Implement jumpin case check
-                    //if (!m_caster->m_movementInfo.HasMovementFlag(MovementFlags(MOVEFLAG_FALLING | MOVEFLAG_FALLINGFAR)) && (pos.coord_z < m_caster->GetPositionZ()) && (fabs(pos.coord_z - m_caster->GetPositionZ()) < 3.0f))
+                    //if (!m_caster->m_movementInfo->HasMovementFlag(MovementFlags(MOVEFLAG_FALLING | MOVEFLAG_FALLINGFAR)) && (pos.coord_z < m_caster->GetPositionZ()) && (fabs(pos.coord_z - m_caster->GetPositionZ()) < 3.0f))
                     //{
                     PathFinder pathFinder(m_caster);
                     pathFinder.setPathLengthLimit(range * 1.5f);

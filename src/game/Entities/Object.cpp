@@ -41,6 +41,8 @@
 #include "Loot/LootMgr.h"
 #include "Spells/SpellMgr.h"
 
+#include "Custom/CPlayer.h"
+
 constexpr float VisibilityDistances[AsUnderlyingType(VisibilityDistanceType::Max)] =
 {
     DEFAULT_VISIBILITY_DISTANCE,
@@ -266,15 +268,15 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint8 updateFlags) const
         {
             Player* player = ((Player*)unit);
             if (player->GetTransport())
-                player->m_movementInfo.AddMovementFlag(MOVEFLAG_ONTRANSPORT);
+                player->m_movementInfo->AddMovementFlag(MOVEFLAG_ONTRANSPORT);
             else
-                player->m_movementInfo.RemoveMovementFlag(MOVEFLAG_ONTRANSPORT);
+                player->m_movementInfo->RemoveMovementFlag(MOVEFLAG_ONTRANSPORT);
         }
 
         // Update movement info time
-        unit->m_movementInfo.UpdateTime(WorldTimer::getMSTime());
+        unit->m_movementInfo->UpdateTime(WorldTimer::getMSTime());
         // Write movement info
-        unit->m_movementInfo.Write(*data);
+        unit->m_movementInfo->Write(*data);
 
         // Unit speeds
         *data << float(unit->GetSpeed(MOVE_WALK));
@@ -287,7 +289,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint8 updateFlags) const
         *data << float(unit->GetSpeed(MOVE_TURN_RATE));
 
         // 0x08000000
-        if (unit->m_movementInfo.GetMovementFlags() & MOVEFLAG_SPLINE_ENABLED)
+        if (unit->m_movementInfo->GetMovementFlags() & MOVEFLAG_SPLINE_ENABLED)
             Movement::PacketBuilder::WriteCreate(*unit->movespline, *data);
     }
     // 0x40
@@ -1094,7 +1096,10 @@ void WorldObject::Relocate(float x, float y, float z, float orientation)
     m_position.o = orientation;
 
     if (isType(TYPEMASK_UNIT))
-        ((Unit*)this)->m_movementInfo.ChangePosition(x, y, z, orientation);
+        ((Unit*)this)->m_movementInfo->ChangePosition(x, y, z, orientation);
+
+    if (isType(TYPEMASK_PLAYER))
+        this->ToCPlayer()->HandleRelocate(x, y, z, orientation);
 }
 
 void WorldObject::Relocate(float x, float y, float z)
@@ -1104,7 +1109,10 @@ void WorldObject::Relocate(float x, float y, float z)
     m_position.z = z;
 
     if (isType(TYPEMASK_UNIT))
-        ((Unit*)this)->m_movementInfo.ChangePosition(x, y, z, GetOrientation());
+        ((Unit*)this)->m_movementInfo->ChangePosition(x, y, z, GetOrientation());
+
+    if (isType(TYPEMASK_PLAYER))
+        this->ToCPlayer()->HandleRelocate(x, y, z, GetOrientation());
 }
 
 void WorldObject::SetOrientation(float orientation)
@@ -1112,7 +1120,7 @@ void WorldObject::SetOrientation(float orientation)
     m_position.o = orientation;
 
     if (isType(TYPEMASK_UNIT))
-        ((Unit*)this)->m_movementInfo.ChangeOrientation(orientation);
+        ((Unit*)this)->m_movementInfo->ChangeOrientation(orientation);
 }
 
 uint32 WorldObject::GetZoneId() const

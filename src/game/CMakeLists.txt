@@ -22,7 +22,7 @@ add_definitions(-DDT_POLYREF64)
 add_definitions(-D__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0)
 
 # Find all the input files
-FILE(GLOB_RECURSE LIBRARY_SRCS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "*.h" "*.cpp")
+FILE(GLOB_RECURSE LIBRARY_SRCS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "*.h" "*.cpp" "*.hpp")
 
 if(NOT BUILD_SCRIPTDEV)
   # exclude script folder for faster build time (used for dev mode)
@@ -110,6 +110,7 @@ if(PCH)
     set_target_properties(${LIBRARY_NAME} PROPERTIES COMPILE_FLAGS " /Yu\"${PrecompiledHeader}\" /FI\"${PrecompiledHeader}\" /Fp\"${PrecompiledBinary}\" /bigobj")
     set_source_files_properties(${PrecompiledSource} PROPERTIES COMPILE_FLAGS "/Yc\"${PrecompiledHeader}\" /Fp\"${PrecompiledBinary}\"")
     set_target_properties(${LIBRARY_NAME} PROPERTIES PROJECT_LABEL "Game")
+
   elseif(NOT MINGW)
     # TODO: Resolve issues with order of includes before enabling Cotire for MinGW builds
     cotire(${LIBRARY_NAME})

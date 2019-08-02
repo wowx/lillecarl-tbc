@@ -1339,7 +1339,7 @@ bool ChatHandler::HandleDebugMoveflags(char* /*args*/)
     if (!target)
         return false;
 
-    PSendSysMessage("Moveflags on target %u", target->m_movementInfo.GetMovementFlags());
+    PSendSysMessage("Moveflags on target %u", target->m_movementInfo->GetMovementFlags());
     return true;
 }
 
