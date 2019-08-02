@@ -19,7 +19,6 @@
 #include "Common.h"
 #include "WorldPacket.h"
 #include "Server/WorldSession.h"
-#include "Server/WorldSocket.h"
 #include "Server/Opcodes.h"
 #include "Log.h"
 #include "Entities/Player.h"
@@ -38,6 +37,7 @@
 #include "Custom/CPlayer.h"
 
 #define MOVEMENT_PACKET_TIME_DELAY 0
+uint32 m_clientTimeDelay;
 
 void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket& /*recv_data*/)
 {
