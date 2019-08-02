@@ -19,6 +19,7 @@
 #include "Common.h"
 #include "WorldPacket.h"
 #include "Server/WorldSession.h"
+#include "Server/WorldSocket.h"
 #include "Server/Opcodes.h"
 #include "Log.h"
 #include "Entities/Player.h"
@@ -569,8 +570,8 @@ void WorldSession::HandleMoverRelocation(const MovementInfoPtr& movementInfo)
 
     // SynchronizeMovement(movementInfo);
 
-    if (MOVEMENT_PACKET_TIME_DELAY == 0)
-        MOVEMENT_PACKET_TIME_DELAY = WorldTimer::getMSTime() - movementInfo->GetTime();
+    if (m_clientTimeDelay == 0)
+        m_clientTimeDelay = WorldTimer::getMSTime() - movementInfo->GetTime();
 
     movementInfo->UpdateTime(movementInfo->GetTime() + m_clientTimeDelay + MOVEMENT_PACKET_TIME_DELAY);
 
