@@ -30,11 +30,10 @@
 #include "Globals/ObjectMgr.h"
 #include "World/World.h"
 
-/*
 #include <boost/accumulators/statistics/variance.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
-*/
+
 #include "Custom/CPlayer.h"
 
 #define MOVEMENT_PACKET_TIME_DELAY 0
