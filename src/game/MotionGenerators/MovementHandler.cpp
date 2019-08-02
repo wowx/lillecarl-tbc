@@ -567,7 +567,7 @@ bool WorldSession::VerifyMovementInfo(const MovementInfoPtr& movementInfo) const
 void WorldSession::HandleMoverRelocation(const MovementInfoPtr& movementInfo)
 {
 
-    // SynchronizeMovement(movementInfo);
+    SynchronizeMovement(movementInfo);
 
     if (m_clientTimeDelay == 0)
         m_clientTimeDelay = WorldTimer::getMSTime() - movementInfo->GetTime();
@@ -635,31 +635,6 @@ void WorldSession::HandleMoverRelocation(const MovementInfoPtr& movementInfo)
         if (mover->IsInWorld())
             mover->GetMap()->CreatureRelocation((Creature*)mover, movementInfo->GetPos()->x, movementInfo->GetPos()->y, movementInfo->GetPos()->z, movementInfo->GetPos()->o);
     }
-}
-
-void WorldSession::HandleMoveTimeSkippedOpcode(WorldPacket& recv_data)
-{
-    /*  WorldSession::Update( WorldTimer::getMSTime() );*/
-    DEBUG_LOG("WORLD: Received opcode CMSG_MOVE_TIME_SKIPPED");
-
-    ObjectGuid guid;
-    uint32 timeSkipped;
-    recv_data >> guid;
-    recv_data >> timeSkipped;
-
-    Unit* mover = _player->GetMover();
-
-    // Ignore updates not for current player
-    if (mover == nullptr || guid != mover->GetObjectGuid())
-        return;
-
-    mover->m_movementInfo.UpdateTime(mover->m_movementInfo.GetTime() + timeSkipped);
-
-    // Send to other players
-    WorldPacket data(MSG_MOVE_TIME_SKIPPED, 16);
-    data << mover->GetPackGUID();
-    data << timeSkipped;
-    mover->SendMessageToSetExcept(data, _player);
 }
 
 void WorldSession::HandleTimeSyncResp(WorldPacket& recvData)
