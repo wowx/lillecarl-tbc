@@ -567,10 +567,11 @@ bool WorldSession::VerifyMovementInfo(const MovementInfoPtr& movementInfo) const
 void WorldSession::HandleMoverRelocation(const MovementInfoPtr& movementInfo)
 {
 
-    SynchronizeMovement(movementInfo);
+    // SynchronizeMovement(movementInfo);
 
-    if (m_clientTimeDelay == 0)
-        m_clientTimeDelay = WorldTimer::getMSTime() - movementInfo->GetTime();
+    if (MOVEMENT_PACKET_TIME_DELAY == 0)
+        MOVEMENT_PACKET_TIME_DELAY = WorldTimer::getMSTime() - movementInfo->GetTime();
+
     movementInfo->UpdateTime(movementInfo->GetTime() + m_clientTimeDelay + MOVEMENT_PACKET_TIME_DELAY);
 
     Unit* mover = _player->GetMover();
